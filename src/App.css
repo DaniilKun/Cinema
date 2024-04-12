@@ -1,12 +1,12 @@
-/* src/App.css */
-body {
-  background-color: #1a191f;
-  font-family: 'Open Sans', sans-serif;
-}
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
+}
+.loading{
+  display: flex;text-align: center;
+  justify-content: center;
+  margin-top: 50px;
 }
 
 .header__content {

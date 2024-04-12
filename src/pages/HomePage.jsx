@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Movie from '../components/Movie';
-import Pagination from '../components/Pagination';
-import MoviesPerPageSelector from '../components/MoviesPerPageSelector';
-import Filters from '../components/Filters';
+import Pagination from '../components/Pagination/Pagination';
+import MoviesPerPageSelector from '../components/MoviesPerPageSelector/MoviesPerPageSelector';
+import Filters from '../components/Filters/Filters';
 import { useNavigate } from 'react-router-dom';
+import '../App.css';
+
 
 
 const DEFAULT_MOVIES_PER_PAGE = 10; // Количество фильмов на одной странице по умолчанию
