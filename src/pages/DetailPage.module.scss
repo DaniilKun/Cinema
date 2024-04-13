@@ -1,0 +1,96 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 30px;
+
+  .avatar {
+    position: relative;
+    width: 200px;
+    height: 300px;
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+    .rating {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      border: 1px solid white;
+      border-radius: 50%;
+    }
+  }
+
+  .cards {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pagination {
+    margin-top: 20px;
+  }
+
+  .seasons {
+    display: flex;
+    align-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+
+    .season {
+      cursor: pointer;
+      margin-left: 10px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+      color: black;
+      border: 1px solid white;
+      border-radius: 50%;
+    }
+
+    .selected {
+      cursor: pointer;
+      margin-left: 10px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+      color: black;
+      border: 3px solid rgb(255, 0, 0);
+      border-radius: 50%;
+    }
+  }
+
+}
+.postersContainer{
+  padding: 50px;
+
+  
+}
+.slick-slide {
+  margin: 0 10px; /* Задаем расстояние между слайдами */
+}
+.reviewBlock{
+  display: flex;align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  .reviewItem{
+    border: 1px solid;
+      border-radius: 15px;
+      padding: 0 10px;
+      margin-bottom: 30px;
+  }
+}
