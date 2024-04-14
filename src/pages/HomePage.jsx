@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
-import Movie from '../components/Movie';
-import Pagination from '../components/Pagination/Pagination';
-import MoviesPerPageSelector from '../components/MoviesPerPageSelector/MoviesPerPageSelector';
-import Filters from '../components/Filters/Filters';
+import Header from '../components/Header.jsx';
+import Movie from '../components/Movie.jsx';
+import Pagination from '../components/Pagination/Pagination.jsx';
+import MoviesPerPageSelector from '../components/MoviesPerPageSelector/MoviesPerPageSelector.jsx';
+import Filters from '../components/Filters/Filters.jsx';
 import { useNavigate } from 'react-router-dom';
-import '../App.css';
+import '../App.scss';
 
 
 
@@ -159,7 +159,7 @@ const HomePage = () => {
         </div>
       )}
       {isAuthenticated ? (
-        <div>
+        <div className="container">
           <Filters
             handleYearChange={handleYearChange}
             handleCountryChange={handleCountryChange}

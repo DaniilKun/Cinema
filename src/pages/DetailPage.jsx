@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import styles from './DetailPage.module.scss';
-import Person from '../components/Person/Person';
+import * as styles from './DetailPage.module.scss';
+import Person from '../components/Person/Person.jsx';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import { fetchApi } from '../api.js';
 
 const DetailPage = () => {
   const { id } = useParams();
@@ -19,100 +20,27 @@ const DetailPage = () => {
   const [seasonsCurrentPage, setSeasonsCurrentPage] = useState(1);
 
   useEffect(() => {
-    const fetchMovie = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`https://api.kinopoisk.dev/v1.4/movie/${id}`, {
-          headers: {
-            'X-API-KEY': 'WF76VQQ-HQB4P5G-JFJH8DF-CRKDP1M',
-          },
+        const [movieData, seasonsData, postersData, reviewsData] = await Promise.all([
+          fetchApi(`https://api.kinopoisk.dev/v1.4/movie/${id}`, 'Ошибка загрузки данных о фильме'),
+          fetchApi(`https://api.kinopoisk.dev/v1.4/season?page=${seasonsCurrentPage}&limit=10&movieId=${id}`, 'Ошибка загрузки данных о сезонах'),
+          fetchApi(`https://api.kinopoisk.dev/v1.4/image?page=1&limit=10&movieId=${id}`, 'Ошибка загрузки данных о постерах'),
+          fetchApi(`https://api.kinopoisk.dev/v1.4/review?page=${reviewsCurrentPage}&limit=10&movieId=${id}`, 'Ошибка загрузки данных о отзывах'),
+        ]);
+        const uniquePersons = Array.from(new Set(movieData.persons.map((person) => person.id))).map((id) => {
+          return movieData.persons.find((person) => person.id === id);
         });
-
-        if (!response.ok) {
-          throw new Error('Ошибка загрузки данных о фильме');
-        }
-
-        const data = await response.json();
-        const uniquePersons = Array.from(new Set(data.persons.map((person) => person.id))).map(
-          (id) => {
-            return data.persons.find((person) => person.id === id);
-          },
-        );
-        setMovie({ ...data, persons: uniquePersons });
+        setMovie({ ...movieData, persons: uniquePersons });
+        setSeasons(seasonsData.docs);
+        setPosters(postersData.docs);
+        setReviews(reviewsData.docs);
       } catch (error) {
-        console.error('Ошибка загрузки данных о фильме:', error);
+        console.error('Ошибка загрузки данных:', error);
       }
     };
 
-    const fetchSeasons = async () => {
-      try {
-        const response = await fetch(
-          `https://api.kinopoisk.dev/v1.4/season?page=${seasonsCurrentPage}&limit=10&movieId=${id}`,
-          {
-            headers: {
-              'X-API-KEY': 'WF76VQQ-HQB4P5G-JFJH8DF-CRKDP1M',
-            },
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error('Ошибка загрузки данных о сезонах');
-        }
-
-        const data = await response.json();
-        setSeasons(data.docs);
-      } catch (error) {
-        console.error('Ошибка загрузки данных о сезонах:', error);
-      }
-    };
-
-    const fetchPosters = async () => {
-      try {
-        const response = await fetch(
-          `https://api.kinopoisk.dev/v1.4/image?page=1&limit=10&movieId=${id}`,
-          {
-            headers: {
-              'X-API-KEY': 'WF76VQQ-HQB4P5G-JFJH8DF-CRKDP1M',
-            },
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error('Ошибка загрузки данных о постерах');
-        }
-
-        const data = await response.json();
-        setPosters(data.docs);
-      } catch (error) {
-        console.error('Ошибка загрузки данных о постерах:', error);
-      }
-    };
-
-    const fetchReviews = async () => {
-      try {
-        const response = await fetch(
-          `https://api.kinopoisk.dev/v1.4/review?page=${reviewsCurrentPage}&limit=10&movieId=${id}`,
-          {
-            headers: {
-              'X-API-KEY': 'WF76VQQ-HQB4P5G-JFJH8DF-CRKDP1M',
-            },
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error('Ошибка загрузки данных о отзывах');
-        }
-
-        const data = await response.json();
-        setReviews(data.docs);
-      } catch (error) {
-        console.error('Ошибка загрузки данных о отзывах:', error);
-      }
-    };
-
-    fetchMovie();
-    fetchSeasons();
-    fetchPosters();
-    fetchReviews();
+    fetchData();
   }, [id, seasonsCurrentPage, reviewsCurrentPage]);
 
   const paginateActors = (actors, pageSize) => {
@@ -179,46 +107,49 @@ const DetailPage = () => {
       },
     ],
   };
+  
+  if(!movie) {
+    return <>undefined</>
+  }
 
   return (
     <div>
-      {movie && (
-        <div className={styles.container}>
-          <div className={styles.avatar}>
-            <img src={movie.poster.previewUrl} alt={movie.nameRu} />
-            <div className={styles.rating}>{movie.rating.imdb && movie.rating.imdb}</div>
-          </div>
-
-          <h1>{movie.name}</h1>
-          <div>
-            Описание: <p>{movie.description}</p>
-          </div>
-          <div>
-            Актеры:
-            {movie.persons && movie.persons.length > 0 ? (
-              <div className={styles.cards}>
-                {paginateActors(movie.persons, 10).map((person) => (
-                  <Person key={person.id} name={person.name} img={person.photo} />
-                ))}
-              </div>
-            ) : (
-              <p>Нет информации об актёрах</p>
-            )}
-          </div>
-
-          <div className={styles.pagination}>
-            <button onClick={goToPreviousPage} disabled={currentPage === 1}>
-              Предыдущая страница
-            </button>
-            <span>{currentPage}</span>
-            <button
-              onClick={goToNextPage}
-              disabled={currentPage === Math.ceil(movie.persons.length / 10)}>
-              Следующая страница
-            </button>
-          </div>
+      <div className={styles.container}>
+    <Link to={`/`}>
+        <button>Назад к выдаче</button>
+      </Link>
+        <div className={styles.avatar}>
+          <img src={movie.poster.previewUrl} alt={movie.nameRu} />
+          <div className={styles.rating}>{movie.rating.imdb && movie.rating.imdb}</div>
         </div>
-      )}
+
+        <h1>{movie.name}</h1>
+        <div className={styles.postersContainer}>
+          Описание: <p>{movie.description}</p>
+        </div>
+        <div>
+          Актеры:
+          {movie.persons && movie.persons.length > 0 ? (
+            <div className={styles.cards}>
+              {paginateActors(movie.persons, 10).map((person) => (
+                <Person key={person.id} name={person.name} img={person.photo} />
+              ))}
+            </div>
+          ) : (
+            <p>Нет информации об актёрах</p>
+          )}
+        </div>
+
+        <div className={styles.pagination}>
+          <button onClick={goToPreviousPage} disabled={currentPage === 1}>
+            Предыдущая страница
+          </button>
+          <span>{currentPage}</span>
+          <button onClick={goToNextPage} disabled={currentPage === Math.ceil(movie.persons.length / 10)}>
+            Следующая страница
+          </button>
+        </div>
+      </div>
 
       <div className={styles.container}>
         <h2>Сезоны и серии</h2>
@@ -283,7 +214,8 @@ const DetailPage = () => {
       </div>
 
       {posters.length > 0 && (
-        <div className={styles.postersContainer}>
+        <div >
+          <div className={styles.postersContainer}>
           <h2>Постеры</h2>
           <Slider {...settings}>
             {posters.map((poster) => (
@@ -291,6 +223,8 @@ const DetailPage = () => {
             ))}
           </Slider>
         </div>
+        </div>
+        
       )}
 
       <div className={styles.container}>
@@ -319,11 +253,6 @@ const DetailPage = () => {
           <p>Нет отзывов</p>
         )}
       </div>
-
-      <Link
-        to={`/`}>
-        <button>Назад к выдаче</button>
-      </Link>
     </div>
   );
 };

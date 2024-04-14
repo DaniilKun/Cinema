@@ -1,5 +1,6 @@
 import React from 'react';
-import styles from './Filters.module.scss'
+import * as styles from './Filters.module.scss';
+
 
 const Filters = ({ handleYearChange, handleCountryChange, handleRatingChange }) => {
   return (

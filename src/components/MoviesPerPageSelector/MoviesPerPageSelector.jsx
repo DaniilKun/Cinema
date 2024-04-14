@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './MoviesPerPageSelector.module.scss'
+import * as styles from './MoviesPerPageSelector.module.scss'
 
 const MoviesPerPageSelector = ({ moviesPerPage, handleMoviesPerPageChange }) => {
   return (

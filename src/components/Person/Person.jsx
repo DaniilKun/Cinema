@@ -1,5 +1,5 @@
 import React from 'react'
-import styles from './Person.module.scss'
+import * as styles from './Person.module.scss'
 
 const Person = ({name, img}) => {
   return (
