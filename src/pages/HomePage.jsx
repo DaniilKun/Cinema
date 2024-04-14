@@ -6,11 +6,9 @@ import MoviesPerPageSelector from '../components/MoviesPerPageSelector/MoviesPer
 import Filters from '../components/Filters/Filters.jsx';
 import { useNavigate } from 'react-router-dom';
 import '../App.scss';
-
-
+import { fetchApi } from '../api.js'; // Импорт функции для запросов
 
 const DEFAULT_MOVIES_PER_PAGE = 10; // Количество фильмов на одной странице по умолчанию
-const API_KEY = 'WF76VQQ-HQB4P5G-JFJH8DF-CRKDP1M';
 
 const HomePage = () => {
   const [movies, setMovies] = useState([]);
@@ -19,14 +17,12 @@ const HomePage = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [moviesPerPage, setMoviesPerPage] = useState(DEFAULT_MOVIES_PER_PAGE);
   const [totalPages, setTotalPages] = useState(0);
-  const [isLoading, setIsLoading] = useState(false); // Состояние для отображения статуса загрузки
+  const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState({ year: '', country: '', rating: '' });
-  const [searchQuery, setSearchQuery] = useState(''); // Состояние для хранения поискового запроса
-  const [error, setError] = useState(null); // Состояние для хранения ошибки при загрузке данных
+  const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState(null);
 
   const navigate = useNavigate();
-
-  const API_URL_POPULAR = `https://api.kinopoisk.dev/v1.4/movie?page=${currentPage}&limit=${moviesPerPage}`;
 
   useEffect(() => {
     const savedAuthStatus = localStorage.getItem('isAuthenticated');
@@ -38,12 +34,12 @@ const HomePage = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (isAuthenticated) {
-        getMovies(API_URL_POPULAR);
+        getMovies();
       }
     }, 1000);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [currentPage, isAuthenticated, moviesPerPage, filters, searchQuery]); // Обновляем эффект при изменении поискового запроса
+  }, [currentPage, isAuthenticated, moviesPerPage, filters, searchQuery]);
 
   const handlePasswordChange = (event) => {
     setPassword(event.target.value);
@@ -94,20 +90,18 @@ const HomePage = () => {
   };
 
   const handleSearch = (query) => {
-    setSearchQuery(query); // Обновляем состояние поискового запроса
+    setSearchQuery(query);
   };
 
   const getMovies = async () => {
     setIsLoading(true);
-    setError(null); // Сбрасываем предыдущую ошибку перед новым запросом
+    setError(null);
     try {
       let url = '';
       if (searchQuery) {
-        // Если есть поисковый запрос, обращаемся к эндпоинту поиска
         url = `https://api.kinopoisk.dev/v1.4/movie/search?query=${searchQuery}`;
       } else {
-        // Иначе обращаемся к эндпоинту для популярных фильмов
-        url = API_URL_POPULAR;
+        url = `https://api.kinopoisk.dev/v1.4/movie?page=${currentPage}&limit=${moviesPerPage}`;
         if (filters.year) {
           url += `&year=${filters.year}`;
         }
@@ -118,21 +112,12 @@ const HomePage = () => {
           url += `&ageRating=${filters.rating}`;
         }
       }
-      const resp = await fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-KEY': API_KEY,
-        },
-      });
-      if (!resp.ok) {
-        throw new Error('Ошибка загрузки фильмов');
-      }
-      const respData = await resp.json();
+      const respData = await fetchApi(url, 'Ошибка загрузки фильмов');
       setMovies(respData.docs);
       setIsLoading(false);
     } catch (error) {
       console.error('Ошибка загрузки фильмов:', error);
-      setError(error.message); // Сохраняем ошибку в состоянии
+      setError(error.message);
       setIsLoading(false);
     }
   };
@@ -152,7 +137,6 @@ const HomePage = () => {
   return (
     <div>
       <Header handleSearch={handleSearch} />
-      {/* Передаем функцию handleSearch в компонент Header */}
       {isAuthenticated && (
         <div className="container">
           <button onClick={handleLogout}>Выйти</button>
@@ -177,7 +161,6 @@ const HomePage = () => {
               НИЧЕГО НЕ НАЙДЕНО
             </div>
           )}
-          {/* Отображаем сообщение об ошибке */}
           {!isLoading && !error && (
             <div>
               <MoviesPerPageSelector
